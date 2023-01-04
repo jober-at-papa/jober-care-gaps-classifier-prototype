@@ -52,4 +52,4 @@ num_rows = check_data |> length
   end)
 
 pct = (right / (right + wrong) * 100) |> Float.round(2)
-IO.puts("Of #{right + wrong} entries, classified #{right} (#{pct} %) correctly.")
+IO.puts("\nOf #{right + wrong} entries, classified #{right} (#{pct} %) correctly.")
