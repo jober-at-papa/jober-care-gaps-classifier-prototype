@@ -13,8 +13,7 @@ defmodule CareGapClassifier do
     init(
       SimpleBayes.init(
         model: :bernoulli,
-        stem: &Stemmer.stem/1,
-        smoothing: 0.5
+        stem: &Stemmer.stem/1
       )
     )
   end
