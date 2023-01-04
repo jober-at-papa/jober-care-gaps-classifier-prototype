@@ -2,25 +2,46 @@
 
 # ------------------------------------------------------------------------------
 # CSV input generated with query in prod:
+#
+#     https://joinpapa.looker.com/sql/ts3vkvdbwjxtjg
 # ------------------------------------------------------------------------------
-# select srn.name as class, src.note as text
-# from service_request_comments src
-# join service_requests sr on sr.id = src.service_request_id
-# join service_request_types srt on srt.id = sr.service_request_type_id
-# join service_request_needs srn on sr.service_request_need_id = srn.id
-# where srt.name = 'Care Gaps'
+# SELECT (sr.status = 'CLOSED-NOT A NEED')                AS false_positive
+#      , srt.code                                         AS type
+#      , srn.name                                         AS need
+#      , REGEXP_REPLACE(sr.description, '\s+', ' ', 'ng') AS text
+#   FROM service_requests sr
+#   JOIN service_request_types srt ON srt.id = sr.service_request_type_id
+#   JOIN service_request_needs srn ON sr.service_request_need_id = srn.id
+#  WHERE sr.status NOT IN ('NEW', 'IN PROGRESS')
+# ------------------------------------------------------------------------------
 
-train = "test.csv"
-check = "test.csv"
+train = "train.csv"
+check = "check.csv"
+
+IO.puts("Training...")
 
 classifier =
   CareGapClassifier.init()
   |> CareGapClassifier.train_from_csv(train)
 
+IO.puts("Classifying...")
+
+check_data = File.stream!(check) |> CSV.decode() |> Enum.to_list()
+num_rows = check_data |> length
+
 {right, wrong} =
-  File.stream!(check)
-  |> CSV.decode()
-  |> Enum.reduce({0, 0}, fn {:ok, [class, text]}, {right, wrong} ->
+  check_data
+  |> Enum.reduce({0, 0}, fn {:ok, [false_pos, type, need, text]}, {right, wrong} ->
+    ProgressBar.render(right + wrong, num_rows)
+
+    qualifier =
+      if false_pos == "f" do
+        "spam"
+      else
+        "ham"
+      end
+
+    class = [type, need, qualifier] |> Enum.join(":")
     guess = classifier |> CareGapClassifier.classify_one(text)
 
     if guess == class do

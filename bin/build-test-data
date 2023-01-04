@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+set -eu -o pipefail
+
+# Check if the number of lines to select is provided as an argument
+if [ $# -eq 0 ]; then
+    echo "Error: No number of lines specified"
+    exit 1
+fi
+
+# Store the number of lines to select
+n=$1
+
+# Store the input file name
+input_file="test-full.csv"
+
+# Generate a random number between 1 and the number of lines in the file
+lines=$(wc -l < "$input_file")
+rand=$((RANDOM % lines + 1))
+
+# Select the random line from the file
+sed -n "${rand}p" "$input_file"
+
+# Select N-1 additional random lines from the file
+for (( i=2; i<=n; i++ )); do
+    rand=$((RANDOM % lines + 1))
+    sed -n "${rand}p" "$input_file"
+done
+
