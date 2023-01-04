@@ -3,19 +3,22 @@
 # ------------------------------------------------------------------------------
 # CSV input generated with query in prod:
 # ------------------------------------------------------------------------------
-# select srn.name as class, string_agg(srn.description, '|') as text
-# from service_requests sr
+# select srn.name as class, src.note as text
+# from service_request_comments src
+# join service_requests sr on sr.id = src.service_request_id
 # join service_request_types srt on srt.id = sr.service_request_type_id
 # join service_request_needs srn on sr.service_request_need_id = srn.id
 # where srt.name = 'Care Gaps'
-# group by srn.name
+
+train = "test.csv"
+check = "test.csv"
 
 classifier =
   CareGapClassifier.init()
-  |> CareGapClassifier.train_from_csv("training_input.csv")
+  |> CareGapClassifier.train_from_csv(train)
 
 {right, wrong} =
-  File.stream!("test_input.csv")
+  File.stream!(check)
   |> CSV.decode()
   |> Enum.reduce({0, 0}, fn {:ok, [class, text]}, {right, wrong} ->
     guess = classifier |> CareGapClassifier.classify_one(text)
