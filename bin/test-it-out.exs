@@ -20,7 +20,7 @@ threshold = 0.5
 
 IO.puts("Training...")
 
-classifier = CareGapClassifier.new_from_csv(data)
+classifier = ServiceRequestClassifier.new_from_csv(data)
 
 IO.puts("Classifying...")
 
@@ -29,7 +29,7 @@ IO.puts("Classifying...")
   |> CSV.decode()
   |> Enum.reduce({0, 0, 0}, fn {:ok, [_fp, type, need, text]}, {right, wrong, unsure} ->
     classifier
-    |> CareGapClassifier.classify(text, threshold: threshold)
+    |> ServiceRequestClassifier.classify(text, threshold: threshold)
     |> case do
       {:unsure, _} -> {right, wrong, unsure + 1}
       {_, :unsure} -> {right, wrong, unsure + 1}

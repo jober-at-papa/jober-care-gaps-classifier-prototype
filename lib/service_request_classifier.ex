@@ -1,4 +1,4 @@
-defmodule CareGapClassifier do
+defmodule ServiceRequestClassifier do
   defstruct types: Bayesic.Trainer.new(),
             needs: %{}
 
