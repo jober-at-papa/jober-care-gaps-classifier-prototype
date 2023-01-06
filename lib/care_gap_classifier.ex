@@ -43,7 +43,8 @@ defmodule CareGapClassifier do
     }
   end
 
-  def classify(classifier, input) do
+  def classify(classifier, input, opts) do
+    threshold = Keyword.get(opts, :threshold, 0.5)
     tokens = input |> stem
 
     type =
@@ -56,7 +57,7 @@ defmodule CareGapClassifier do
         {:unsure, nil} ->
           {:unsure, nil}
 
-        {_, pct} when pct <= 0.5 ->
+        {_, pct} when pct <= threshold ->
           {:unsure, nil}
 
         {type, _} ->

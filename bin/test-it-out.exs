@@ -16,6 +16,7 @@
 # ------------------------------------------------------------------------------
 
 data = "test-full.csv"
+threshold = 0.5
 
 IO.puts("Training...")
 
@@ -28,7 +29,7 @@ IO.puts("Classifying...")
   |> CSV.decode()
   |> Enum.reduce({0, 0, 0}, fn {:ok, [_fp, type, need, text]}, {right, wrong, unsure} ->
     classifier
-    |> CareGapClassifier.classify(text)
+    |> CareGapClassifier.classify(text, threshold: threshold)
     |> case do
       {:unsure, _} -> {right, wrong, unsure + 1}
       {_, :unsure} -> {right, wrong, unsure + 1}
@@ -48,10 +49,12 @@ pct_right_total = (right / total * 100) |> Float.round(2)
 pct_wrong = (wrong / total_classified * 100) |> Float.round(2)
 pct_wrong_total = (wrong / total * 100) |> Float.round(2)
 
+id_threshold = (threshold * 100) |> Float.round(2)
+
 IO.puts("""
 --------------------------------------------------------------------------------
    Total: #{total}
-  Unsure: #{unsure} - #{pct_unsure}%
+  Unsure: #{unsure} - #{pct_unsure}% (identification threshold: #{id_threshold}%)
    Right: #{right} - #{pct_right}% of those classified, #{pct_right_total}% of total
    Wrong: #{wrong} - #{pct_wrong}% of those classified, #{pct_wrong_total}% of total
 --------------------------------------------------------------------------------

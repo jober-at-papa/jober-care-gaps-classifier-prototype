@@ -4,15 +4,18 @@ Prototype to use a naive bayesian filter to automatically classify
 `service_requests.description` text by `service_request_needs.name`.
 
 ```
-$ bin/build-test-data 100 > check.csv
-$ bin/build-test-data 3000 > train.csv
 $ mix run bin/test-it-out.exs
-Of 4735 entries, classified 4735 (100.0 %) correctly.
+
+Training...
+Classifying...
+--------------------------------------------------------------------------------
+   Total: 80731
+  Unsure: 26798 - 33.19% (identification threshold: 50.0%)
+   Right: 27113 - 50.27% of those classified, 33.58% of total
+   Wrong: 26820 - 49.73% of those classified, 33.22% of total
+--------------------------------------------------------------------------------
 ```
 
 # Training data
 
 `test-full.csv` was exported from https://joinpapa.looker.com/sql/ts3vkvdbwjxtjg
-
-# TODO
-* Not sure if necessary, but training data to identify when there _is_ no care gap?
