@@ -1,41 +1,52 @@
-defmodule Thing do
+defmodule CareGapClassifier do
   defstruct types: Bayesic.Trainer.new(), needs: %{}
 
-  @finalize_opts [pruning_threshold: 0.33]
+  @finalize_opts [pruning_threshold: 0.5]
 
-  def new() do
-    %__MODULE__{}
+  def new(), do: %__MODULE__{}
+  def new(types, needs), do: %__MODULE__{types: types, needs: needs}
+
+  def from_csv(csv_file) do
+    File.stream!(csv_file)
+    |> CSV.decode()
+    |> Enum.reduce(new(), fn {:ok, [_fp, type, need, text]}, classifier ->
+      tokens = text |> String.split() |> stem()
+      classifier |> train(type, need, tokens)
+    end)
+    |> finalize()
   end
 
-  def train(thing, type, need, tokens) do
+  def train(classifier, type, need, tokens) do
     %__MODULE__{
       types:
-        thing.types
+        classifier.types
         |> Bayesic.train(tokens, type),
       needs:
-        thing.needs
+        classifier.needs
         |> Map.put(
           type,
-          Map.get(thing.needs, type, Bayesic.Trainer.new()) |> Bayesic.train(tokens, need)
+          Map.get(classifier.needs, type, Bayesic.Trainer.new()) |> Bayesic.train(tokens, need)
         )
     }
   end
 
-  def finalize(thing) do
+  defp finalize(classifier) do
     %__MODULE__{
       types:
-        thing.types
+        classifier.types
         |> Bayesic.finalize(@finalize_opts),
       needs:
-        thing.needs
+        classifier.needs
         |> Enum.map(fn {type, trainer} -> {type, trainer |> Bayesic.finalize(@finalize_opts)} end)
         |> Map.new()
     }
   end
 
-  def classify(thing, tokens) do
+  def classify(classifier, input) do
+    tokens = input |> stem
+
     type =
-      thing.types
+      classifier.types
       |> Bayesic.classify(tokens)
       |> Enum.max_by(fn {_, v} -> v end, fn -> {:no_idea, nil} end)
       |> elem(0)
@@ -49,7 +60,7 @@ defmodule Thing do
           :no_idea
 
         true ->
-          thing.needs[type]
+          classifier.needs[type]
           |> Bayesic.classify(tokens)
           |> Enum.max_by(fn {_, v} -> v end, fn -> {:no_idea, nil} end)
           |> elem(0)
@@ -57,25 +68,7 @@ defmodule Thing do
 
     {type, need}
   end
-end
 
-defmodule CareGapClassifier do
-  def from_csv(csv_file) do
-    File.stream!(csv_file)
-    |> CSV.decode()
-    |> Enum.reduce(Thing.new(), fn {:ok, [_fp, type, need, text]}, thing ->
-      tokens = text |> String.split() |> stem()
-      thing |> Thing.train(type, need, tokens)
-    end)
-    |> Thing.finalize()
-  end
-
-  def classify(classifier, text) do
-    classifier |> Thing.classify(text |> String.split() |> stem())
-  end
-
-  def stem(text) do
-    text
-    |> Enum.map(&StoutPorter2.stem/1)
-  end
+  defp stem(text) when is_binary(text), do: text |> String.split() |> stem()
+  defp stem(text) when is_list(text), do: text |> Enum.map(&StoutPorter2.stem/1)
 end
