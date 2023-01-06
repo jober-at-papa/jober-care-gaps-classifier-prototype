@@ -1,8 +1,14 @@
 %{
+  "bayesic": {:hex, :bayesic, "0.1.1", "dc0739c7656ea0d6382724cac1573a1e7355fe047815e12cc0f531d8540d9282", [:mix], [], "hexpm", "74f0d251bcc93d750627070fa68144f71b878948a46977697e1329fb6bff8fee"},
+  "bayesic_nif": {:hex, :bayesic_nif, "0.1.0", "78e9ce52ec41eb48d90afa3b40f305e59e860ff239b4449fdc59b849326451fd", [:mix], [{:rustler, "~> 0.21", [hex: :rustler, repo: "hexpm", optional: false]}], "hexpm", "ac534dadb43e54fa25fcfb3f668244a7d0dac44c0409c4b2dfbcd22ee85c3a17"},
   "csv": {:hex, :csv, "3.0.5", "3c1455127e92de8845806db89554ad7d45e0212974be41dd9c38a5c881861713", [:mix], [], "hexpm", "cbbe5455c93df5f3f2943e995e28b7a8808361ba34cf3e44267d77a01eaf1609"},
   "decimal": {:hex, :decimal, "2.0.0", "a78296e617b0f5dd4c6caf57c714431347912ffb1d0842e998e9792b5642d697", [:mix], [], "hexpm", "34666e9c55dea81013e77d9d87370fe6cb6291d1ef32f46a1600230b1d44f577"},
+  "jason": {:hex, :jason, "1.4.0", "e855647bc964a44e2f67df589ccf49105ae039d4179db7f6271dfd3843dc27e6", [:mix], [{:decimal, "~> 1.0 or ~> 2.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm", "79a3791085b2a0f743ca04cec0f7be26443738779d09302e01318f97bdb82121"},
   "math": {:hex, :math, "0.7.0", "12af548c3892abf939a2e242216c3e7cbfb65b9b2fe0d872d05c6fb609f8127b", [:mix], [], "hexpm", "7987af97a0c6b58ad9db43eb5252a49fc1dfe1f6d98f17da9282e297f594ebc2"},
   "progress_bar": {:hex, :progress_bar, "2.0.1", "7b40200112ae533d5adceb80ff75fbe66dc753bca5f6c55c073bfc122d71896d", [:mix], [{:decimal, "~> 2.0", [hex: :decimal, repo: "hexpm", optional: false]}], "hexpm", "2519eb58a2f149a3a094e729378256d8cb6d96a259ec94841bd69fdc71f18f87"},
+  "rustler": {:hex, :rustler, "0.26.0", "06a2773d453ee3e9109efda643cf2ae633dedea709e2455ac42b83637c9249bf", [:mix], [{:jason, "~> 1.0", [hex: :jason, repo: "hexpm", optional: false]}, {:toml, "~> 0.6", [hex: :toml, repo: "hexpm", optional: false]}], "hexpm", "42961e9d2083d004d5a53e111ad1f0c347efd9a05cb2eb2ffa1d037cdc74db91"},
   "simple_bayes": {:hex, :simple_bayes, "0.12.2", "fd9589b9c9e2c64bdb153da1f6180345751ea0e833758d42fdb17bc7e95f13ba", [:mix], [{:decimal, ">= 0.0.0", [hex: :decimal, repo: "hexpm", optional: false]}, {:math, ">= 0.0.0", [hex: :math, repo: "hexpm", optional: false]}], "hexpm", "ee8b984b1023d676de201344e141ea8b619dbe83aa1bff5b6d83fda9665d6319"},
   "stemmer": {:hex, :stemmer, "1.1.0", "71221331ced40832b47e6989a12dd9de1b15c982043d1014742be83c34ec9e79", [:mix], [], "hexpm", "0cb5faf73476b84500e371ff39fd9a494f60ab31d991689c1cd53b920556228f"},
+  "stout_porter2": {:hex, :stout_porter2, "0.1.2", "faa450eed5240a623b7d0cf36595e684ee88ca9f6a8a30c657280df1bcc89e44", [:mix], [], "hexpm", "63f9de06bacdb7137ce8a69487fa35542d1b40e76d60a4772e390b52cdf522d3"},
+  "toml": {:hex, :toml, "0.7.0", "fbcd773caa937d0c7a02c301a1feea25612720ac3fa1ccb8bfd9d30d822911de", [:mix], [], "hexpm", "0690246a2478c1defd100b0c9b89b4ea280a22be9a7b313a8a058a2408a2fa70"},
 }

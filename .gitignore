@@ -26,3 +26,5 @@ scratch-*.tar
 /tmp/
 
 .DS_Store
+check.csv
+train.csv

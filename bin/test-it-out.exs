@@ -15,36 +15,44 @@
 #  WHERE sr.status NOT IN ('NEW', 'IN PROGRESS')
 # ------------------------------------------------------------------------------
 
-train = "train.csv"
+# train = "train.csv"
+train = "test-full.csv"
 check = "check.csv"
+
+{args, _, _} =
+  OptionParser.parse(
+    System.argv(),
+    strict: [
+      train: :integer,
+      check: :integer
+    ]
+  )
+
+IO.puts("Building training and verification data...")
+pwd = System.get_env("PWD")
+# System.cmd("#{pwd}/bin/build-test-data", [args[:train] |> Integer.to_string(), train])
+System.cmd("#{pwd}/bin/build-test-data", [args[:check] |> Integer.to_string(), check])
 
 IO.puts("Training...")
 
-classifier =
-  CareGapClassifier.init()
-  |> CareGapClassifier.train_from_csv(train)
+classifier = CareGapClassifier.from_csv(train)
 
 IO.puts("Classifying...")
 
-check_data = File.stream!(check) |> CSV.decode() |> Enum.to_list()
-num_rows = check_data |> length
-
 {right, wrong} =
-  check_data
-  |> Enum.reduce({0, 0}, fn {:ok, [false_pos, type, need, text]}, {right, wrong} ->
-    ProgressBar.render(right + wrong, num_rows)
+  File.stream!(check)
+  |> CSV.decode()
+  |> Enum.to_list()
+  |> Enum.reduce({0, 0}, fn {:ok, [_fp, type, need, text]}, {right, wrong} ->
+    guess = classifier |> CareGapClassifier.classify(text)
+    ProgressBar.render(right + wrong, args[:check])
 
-    qualifier =
-      if false_pos == "f" do
-        "spam"
-      else
-        "ham"
-      end
+    # IO.puts("--------------------------------------------------------------------------------")
+    # IO.puts("  TOKENS: #{text}")
+    # IO.puts("EXPECTED: #{{type, need} |> inspect}")
+    # IO.puts("     GOT: #{guess |> inspect}")
 
-    class = [type, need, qualifier] |> Enum.join(":")
-    guess = classifier |> CareGapClassifier.classify_one(text)
-
-    if guess == class do
+    if guess == {type, need} do
       {right + 1, wrong}
     else
       {right, wrong + 1}

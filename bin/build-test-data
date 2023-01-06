@@ -2,11 +2,9 @@
 
 set -eu -o pipefail
 
-if [ $# -eq 0 ]; then
-    echo "Error: No number of lines specified"
+if [ $# -lt 2 ]; then
+    echo "usage: bin/build-test-data lines into"
     exit 1
 fi
 
-n=$1
-
-cat test-full.csv | sort -R | tail -n $1
+cat test-full.csv | sort -R | tail -n $1 > $2
