@@ -22,7 +22,6 @@ defmodule Scratch.MixProject do
   defp deps do
     [
       {:csv, "~> 3.0"},
-      {:progress_bar, "> 0.0.0"},
       {:bayesic, "~> 0.1.1"},
       {:stout_porter2, "~> 0.1.2"}
     ]

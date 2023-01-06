@@ -15,49 +15,44 @@
 #  WHERE sr.status NOT IN ('NEW', 'IN PROGRESS')
 # ------------------------------------------------------------------------------
 
-# train = "train.csv"
-train = "test-full.csv"
-check = "check.csv"
-
-{args, _, _} =
-  OptionParser.parse(
-    System.argv(),
-    strict: [
-      train: :integer,
-      check: :integer
-    ]
-  )
-
-IO.puts("Building training and verification data...")
-pwd = System.get_env("PWD")
-# System.cmd("#{pwd}/bin/build-test-data", [args[:train] |> Integer.to_string(), train])
-System.cmd("#{pwd}/bin/build-test-data", [args[:check] |> Integer.to_string(), check])
+data = "test-full.csv"
 
 IO.puts("Training...")
 
-classifier = CareGapClassifier.from_csv(train)
+classifier = CareGapClassifier.new_from_csv(data)
 
 IO.puts("Classifying...")
 
-{right, wrong} =
-  File.stream!(check)
+{right, wrong, unsure} =
+  File.stream!(data)
   |> CSV.decode()
-  |> Enum.to_list()
-  |> Enum.reduce({0, 0}, fn {:ok, [_fp, type, need, text]}, {right, wrong} ->
-    guess = classifier |> CareGapClassifier.classify(text)
-    ProgressBar.render(right + wrong, args[:check])
-
-    # IO.puts("--------------------------------------------------------------------------------")
-    # IO.puts("  TOKENS: #{text}")
-    # IO.puts("EXPECTED: #{{type, need} |> inspect}")
-    # IO.puts("     GOT: #{guess |> inspect}")
-
-    if guess == {type, need} do
-      {right + 1, wrong}
-    else
-      {right, wrong + 1}
+  |> Enum.reduce({0, 0, 0}, fn {:ok, [_fp, type, need, text]}, {right, wrong, unsure} ->
+    classifier
+    |> CareGapClassifier.classify(text)
+    |> case do
+      {:unsure, _} -> {right, wrong, unsure + 1}
+      {_, :unsure} -> {right, wrong, unsure + 1}
+      {^type, ^need} -> {right + 1, wrong, unsure}
+      _ -> {right, wrong + 1, unsure}
     end
   end)
 
-pct = (right / (right + wrong) * 100) |> Float.round(2)
-IO.puts("\nOf #{right + wrong} entries, classified #{right} (#{pct} %) correctly.")
+total = right + wrong + unsure
+total_classified = right + wrong
+
+pct_unsure = (unsure / total * 100) |> Float.round(2)
+
+pct_right = (right / total_classified * 100) |> Float.round(2)
+pct_right_total = (right / total * 100) |> Float.round(2)
+
+pct_wrong = (wrong / total_classified * 100) |> Float.round(2)
+pct_wrong_total = (wrong / total * 100) |> Float.round(2)
+
+IO.puts("""
+--------------------------------------------------------------------------------
+   Total: #{total}
+  Unsure: #{unsure} - #{pct_unsure}%
+   Right: #{right} - #{pct_right}% of those classified, #{pct_right_total}% of total
+   Wrong: #{wrong} - #{pct_wrong}% of those classified, #{pct_wrong_total}% of total
+--------------------------------------------------------------------------------
+""")

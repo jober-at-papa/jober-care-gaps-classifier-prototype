@@ -1,15 +1,16 @@
 defmodule CareGapClassifier do
-  defstruct types: Bayesic.Trainer.new(), needs: %{}
+  defstruct types: Bayesic.Trainer.new(),
+            needs: %{}
 
   @finalize_opts [pruning_threshold: 0.5]
 
   def new(), do: %__MODULE__{}
   def new(types, needs), do: %__MODULE__{types: types, needs: needs}
 
-  def from_csv(csv_file) do
+  def new_from_csv(csv_file) do
     File.stream!(csv_file)
     |> CSV.decode()
-    |> Enum.reduce(new(), fn {:ok, [_fp, type, need, text]}, classifier ->
+    |> Enum.reduce(new(), fn {:ok, [_false_positive, type, need, text]}, classifier ->
       tokens = text |> String.split() |> stem()
       classifier |> train(type, need, tokens)
     end)
@@ -48,25 +49,23 @@ defmodule CareGapClassifier do
     type =
       classifier.types
       |> Bayesic.classify(tokens)
-      |> Enum.max_by(fn {_, v} -> v end, fn -> {:no_idea, nil} end)
-      |> elem(0)
+      |> Enum.max_by(fn {_, v} -> v end, fn -> {:unsure, nil} end)
 
     need =
-      cond do
-        type == :no_idea ->
-          :no_idea
+      case type do
+        {:unsure, nil} ->
+          {:unsure, nil}
 
-        type == nil ->
-          :no_idea
+        {_, pct} when pct <= 0.5 ->
+          {:unsure, nil}
 
-        true ->
+        {type, _} ->
           classifier.needs[type]
           |> Bayesic.classify(tokens)
-          |> Enum.max_by(fn {_, v} -> v end, fn -> {:no_idea, nil} end)
-          |> elem(0)
+          |> Enum.max_by(fn {_, v} -> v end, fn -> {:unsure, nil} end)
       end
 
-    {type, need}
+    {type |> elem(0), need |> elem(0)}
   end
 
   defp stem(text) when is_binary(text), do: text |> String.split() |> stem()
